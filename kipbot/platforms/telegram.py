@@ -28,11 +28,14 @@ class TelegramPlatform:
         user_id = str(update.effective_user.id)
         text = update.message.text
 
-        agent_context = self._get_context(user_id)
-        response = await self.agent.chat(agent_context, text)
-
-        await update.message.reply_text(response)
-        logger.info(f"[telegram] replied to {user_id}")
+        try:
+            agent_context = self._get_context(user_id)
+            response = await self.agent.chat(agent_context, text)
+            await update.message.reply_text(response)
+            logger.info(f"[telegram] replied to {user_id}")
+        except Exception as e:
+            logger.error(f"[telegram] error for {user_id}: {e}")
+            await update.message.reply_text(f"Error: {e}")
 
     def run(self) -> None:
         """Start the Telegram bot."""
