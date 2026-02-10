@@ -16,6 +16,20 @@ CONFIG_DIR = Path.home() / ".kipbot"
 CONFIG_FILE = CONFIG_DIR / "config.json"
 
 
+def _create_agent(config):
+    """Create an agent with all built-in tools registered."""
+    from kipbot.core.agent import Agent
+    from kipbot.tools.calculator import CalculatorTool
+    from kipbot.tools.datetime_tool import DateTimeTool
+    from kipbot.tools.web_search import WebSearchTool
+
+    agent = Agent(config)
+    agent.register_tool(DateTimeTool())
+    agent.register_tool(CalculatorTool())
+    agent.register_tool(WebSearchTool())
+    return agent
+
+
 def load_config() -> dict:
     if CONFIG_FILE.exists():
         return json.loads(CONFIG_FILE.read_text(encoding="utf-8"))
@@ -74,7 +88,7 @@ def run(platform: str = typer.Argument("telegram", help="Platform to run: telegr
         raise typer.Exit(1)
 
     config = Config(**raw)
-    agent = Agent(config)
+    agent = _create_agent(config)
 
     if platform == "telegram":
         from kipbot.platforms.telegram import TelegramPlatform
@@ -106,7 +120,7 @@ def chat():
         raise typer.Exit(1)
 
     config = Config(**raw)
-    agent = Agent(config)
+    agent = _create_agent(config)
     context = AgentContext(user_id="cli_user", platform="cli")
 
     console.print(Panel("kipbot interactive chat - type 'exit' to quit", title="kipbot"))
